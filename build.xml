@@ -4,7 +4,7 @@
 
 	<!-- PROPERTIES -->
 	<!-- You could create "user.properties.xml" to override the default/custom properties. -->
-	<xmlproperty file=".ant/user.properties.xml" semanticAttributes="true" collapseAttributes="true" keepRoot="false" validate="true"/>
+	<xmlproperty file=".ant/user.properties.xml" semanticAttributes="true" collapseAttributes="true" keepRoot="false" validate="false"/>
 	<!-- The overall generic properties. -->
 	<xmlproperty file=".ant/default.properties.xml" semanticAttributes="true" collapseAttributes="true" keepRoot="false" validate="false"/>
 	<!-- Grab all environment variables. -->
