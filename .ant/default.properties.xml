@@ -3,7 +3,7 @@
 	<target>
 		<name>AssetRender</name>
 		<shortname>asset-render</shortname>
-        <platform>
+     <platform>
             <windows extension=".exe" />
             <linux extension=".x86_64" />
             <osx extension=".dmg" />
@@ -27,7 +27,7 @@
 	</application>
 	
 	<docker>
-		<name>indg/asset-render</name>
+		<name>manolito/asset-render</name>
 	</docker>
 
 	<tools>
