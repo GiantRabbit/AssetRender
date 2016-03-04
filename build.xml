@@ -17,6 +17,7 @@
 	</condition>
 
 	<!-- INCLUDE TARGETS -->
+	
 	<!-- PREPARATIONS -->
 
 	<!-- TARGETS -->
@@ -27,17 +28,15 @@
 		<echo>  ant clean              - Clean the current build directory.</echo>
 		<echo>  ant cleanAll           - Clean the current build and/or deployment directory.</echo>
 		<echo></echo>
-		<echo>NOTE: It is always required to pass on the following 'build' properties:</echo>
-		<echo>  - build.brand   - Choose between the available brands (for example: Amikasa|Yamaha)</echo>
-		<echo>  - build.target  - Choose between the available targets (for example: iOS|OSX|Windows)</echo>
-		<echo>  - build.dtap    - Choose between development|test|acceptance|production</echo>
+		<echo>NOTE: The default platform to build is 'linux'. Use an default Ant argument to</echo>
+		<echo>      override this behavior.</echo>
 		<echo></echo>
 		<echo>For example: </echo>
-		<echo>  ant -Dbuild.brand=Amikasa -Dbuild.target=iOS -Dbuild.dtap=production build</echo>
+		<echo>  ant -Dplatform=windows build</echo>
 		<echo></echo>
 		<echo>It is possible to override the default properties with your own settings (or any other property).</echo>
-		<echo>Do this by creating a user.properties.xml next in the "Properties" folder. Assign properties</echo>
-		<echo>to your liking, for example when your Unity installation is located somewhere else this is the place where</echo>
+		<echo>Do this by creating a '.ant/user.properties.xml' file. Assign properties to your liking, </echo>
+		<echo>for example when your Unity installation is located somewhere else this is the place where</echo>
 		<echo>the location to your local Unity executable is placed.</echo>
 	</target>
 
@@ -70,15 +69,15 @@
 		<echo>Application... ${application.file}</echo>
 	</target>
 
-	<target name="build" description="..." depends="info,build.unity,build.docker">
+	<target name="build" description="Build everything for the current 'platform' property." depends="info,build.unity,build.docker">
 	</target>
 	
-	<target name="build.unity" description="..." depends="setup">
+	<target name="build.unity" description="Build the Unity application for the current 'platform' property." depends="setup">
 		<mkdir dir="${dir.build}"/>
 		<build builder="${tools.unity}" platform="${platform}" />
 	</target>
 
-	<target name="build.docker" description="..." depends="setup" if="${enable.docker}">
+	<target name="build.docker" description="Create the Docker image when the current 'platform' property is 'linux'." depends="setup" if="${enable.docker}">
 		<mkdir dir="${dir.build}"/>
 		<copy file="${dir.docker}/Dockerfile" todir="${dir.build}" overwrite="true" failonerror="true" />
 		<exec executable="${tools.docker}" failonerror="false" dir="${dir.build}">
@@ -89,8 +88,8 @@
 		</exec>
 	</target>
 
-	<target name="clean" description="..." depends="setup,info">
 		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
+	<target name="clean" description="Clean the builds for the current platform." depends="setup,info">
 		<delete includeEmptyDirs="true" dir="${dir.build}" failonerror="false" />
 		<delete failonerror="false">
 			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll"/>
@@ -98,8 +97,8 @@
 		</delete>
 	</target>
 
-	<target name="cleanAll" description="..." depends="setup">
 		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
+	<target name="cleanAll" description="Clean all builds and Unity Library generated dlls" depends="setup">
 		<delete includeEmptyDirs="true" dir="${dir.base}/Library/ScriptAssemblies" failonerror="false" />
 		<delete includeEmptyDirs="true" failonerror="false">
 			<fileset dir="${dir.ant}/Builds/" includes="**/*" />
