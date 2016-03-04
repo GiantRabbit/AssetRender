@@ -1,0 +1,43 @@
+<properties>
+    <platform>linux</platform>
+	<target>
+		<name>AssetRender</name>
+		<shortname>asset-render</shortname>
+        <platform>
+            <windows extension=".exe" />
+            <linux extension=".x86_64" />
+            <osx extension=".dmg" />
+        </platform>
+	</target>
+	
+	<!-- Paths of several folders. -->
+	<dir>
+		<ant>${basedir}</ant>
+		<base location="${basedir}"/>
+		<build location="${dir.base}/Builds/${platform}"/>
+		<docker location="${dir.base}/Docker"/>
+	</dir>
+	
+	<application>
+		<executablename>${target.name}</executablename>
+		<version>
+			<major>2</major>
+			<minor>1</minor>
+		</version>
+	</application>
+	
+	<docker>
+		<name>indg/asset-render</name>
+	</docker>
+
+	<tools>
+		<unity>
+			<mac location="/Applications/Unity/Unity.app/Contents/MacOS/Unity"/>
+			<win location="C:\Program Files (x86)\Unity\Editor\Unity.exe"/>
+		</unity>
+		<docker>
+			<mac location="/usr/local/bin/docker"/>
+			<win location="C:\Program Files\Docker Toolbox\docker.exe"/>
+		</docker>
+	</tools>
+</properties>

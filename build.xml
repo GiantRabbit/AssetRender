@@ -1,0 +1,173 @@
+<project default="usage" name="AssetRender">
+
+	<!-- Import/define custom tasks. -->
+
+	<!-- PROPERTIES -->
+	<!-- You could create "user.properties.xml" to override the default/custom properties. -->
+	<xmlproperty file=".ant/user.properties.xml" semanticAttributes="true" collapseAttributes="true" keepRoot="false" validate="true"/>
+	<!-- The overall generic properties. -->
+	<xmlproperty file=".ant/default.properties.xml" semanticAttributes="true" collapseAttributes="true" keepRoot="false" validate="false"/>
+	<!-- Grab all environment variables. -->
+	<property environment="env" />
+	<condition property="os.windows">
+		<os family="windows" />
+	</condition>
+	<condition property="os.mac">
+		<os family="mac" />
+	</condition>
+
+	<!-- INCLUDE TARGETS -->
+	<!-- PREPARATIONS -->
+
+	<!-- TARGETS -->
+	<target name="usage" description="Welcome message.">
+		<echo>Usage:</echo>
+		<echo>  ant                    - Display the usage for this build script.</echo>
+		<echo>  ant build              - Build the application.</echo>
+		<echo>  ant clean              - Clean the current build directory.</echo>
+		<echo>  ant cleanAll           - Clean the current build and/or deployment directory.</echo>
+		<echo></echo>
+		<echo>NOTE: It is always required to pass on the following 'build' properties:</echo>
+		<echo>  - build.brand   - Choose between the available brands (for example: Amikasa|Yamaha)</echo>
+		<echo>  - build.target  - Choose between the available targets (for example: iOS|OSX|Windows)</echo>
+		<echo>  - build.dtap    - Choose between development|test|acceptance|production</echo>
+		<echo></echo>
+		<echo>For example: </echo>
+		<echo>  ant -Dbuild.brand=Amikasa -Dbuild.target=iOS -Dbuild.dtap=production build</echo>
+		<echo></echo>
+		<echo>It is possible to override the default properties with your own settings (or any other property).</echo>
+		<echo>Do this by creating a user.properties.xml next in the "Properties" folder. Assign properties</echo>
+		<echo>to your liking, for example when your Unity installation is located somewhere else this is the place where</echo>
+		<echo>the location to your local Unity executable is placed.</echo>
+	</target>
+
+	<target name="setup">
+		<property name="unity.logfile" location="${java.io.tmpdir}/asset-render.build.log"/>
+		<condition property="enable.docker" value="true" else="false">
+			<equals arg1="linux" arg2="${platform}" casesensitive="true" forcestring="true" />
+		</condition>
+		<condition property="tools.unity" value="${tools.unity.win}" else="${tools.unity.mac}">
+			<os family="windows"/>
+		</condition>
+		<condition property="tools.docker" value="${tools.docker.win}" else="${tools.docker.mac}">
+			<os family="windows"/>
+		</condition>
+        <propertycopy name="application.extension" from="target.platform.${platform}.extension"/>
+        <property name="application.name">${application.executablename}${application.extension}</property>
+        <property name="application.file" location="${dir.build}/${application.name}"/>
+	</target>
+
+	<target name="info" depends="setup">
+        <echo>Platform... ${platform}</echo>
+		<echo>Building...  ${application.name}</echo>
+		<echo>Base directory... ${basedir}</echo>
+		<echo>Ant base directory... ${dir.base}</echo>
+		<echo>Build directory... ${dir.build}</echo>
+		<echo>Unity... ${tools.unity}</echo>
+		<echo>Unity logfile... ${unity.logfile}</echo>
+		<echo>Docker... ${tools.docker}</echo>
+        <echo>Docker enabled... ${enable.docker}</echo>
+		<echo>Application... ${application.file}</echo>
+	</target>
+
+	<target name="build" description="..." depends="info,build.unity,build.docker">
+	</target>
+	
+	<target name="build.unity" description="..." depends="setup">
+		<mkdir dir="${dir.build}"/>
+		<build builder="${tools.unity}" platform="${platform}" />
+	</target>
+
+	<target name="build.docker" description="..." depends="setup" if="${enable.docker}">
+		<mkdir dir="${dir.build}"/>
+		<copy file="${dir.docker}/Dockerfile" todir="${dir.build}" overwrite="true" failonerror="true" />
+		<exec executable="${tools.docker}" failonerror="false" dir="${dir.build}">
+			<arg value="build" />
+			<arg value="-t"/>
+			<arg value="${docker.name}"/>
+			<arg file="${dir.build}"/>
+		</exec>
+	</target>
+
+	<target name="clean" description="..." depends="setup,info">
+		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
+		<delete includeEmptyDirs="true" dir="${dir.build}" failonerror="false" />
+		<delete failonerror="false">
+			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll"/>
+			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll.meta"/>
+		</delete>
+	</target>
+
+	<target name="cleanAll" description="..." depends="setup">
+		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
+		<delete includeEmptyDirs="true" dir="${dir.base}/Library/ScriptAssemblies" failonerror="false" />
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${dir.ant}/Builds/" includes="**/*" />
+		</delete>
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${dir.deploy}/" includes="**/*" />
+		</delete>
+		<delete includeEmptyDirs="true" dir="${dir.base}/XCodeProject2" failonerror="false" />
+		<delete failonerror="false" includeemptydirs="true">
+			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll"/>
+			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll.meta"/>
+			<fileset dir="${dir.base}/Assets/Scaleform" includes="**/*" excludes="*.zip.*,unzip-scaleform"/>
+		</delete>
+	</target>
+
+	<!-- MACRODEFS -->
+	<macrodef name="build">
+		<attribute name="builder" />
+		<attribute name="platform" />
+		<sequential>
+			<!-- Prepare for logging Unity build output-->
+			<delete file="${unity.logfile}" quiet="true"/>
+
+			<!-- Build the application via the Unity editor. -->
+			<echo>Building... ${application.file}</echo>
+			
+			<exec executable="@{builder}" failonerror="false" dir="${dir.base}">
+				<arg value="-quit" />
+				<arg value="-batchmode"/>
+				<arg value="-nographics"/>
+				<arg value="-logFile"/>
+				<arg value="${unity.logfile}"/>
+				<arg value="-projectPath"/>
+				<arg value="${dir.base}"/>
+				<arg value="-executeMethod" />
+				<arg value="BuildPlayer.CommandLineBuild" />
+				<arg value="--to"/>
+				<arg value="${application.file}"/>
+				<arg value="--platform"/>
+				<arg value="@{platform}"/>
+			</exec>
+
+			<!-- Check if the application really exists. Unity does not always fail when building would not succeed. We will fail with the output log. -->
+			<available file="${application.file}" property="build.succeeded"/>
+			<loadfile property="unity.output" srcFile="${unity.logfile}"/>
+			<fail unless="${build.succeeded}" message="Unity failed to create the application file ${application.file}. ${unity.output}" />
+		</sequential>
+	</macrodef>
+
+	<macrodef name="dir-exists">
+		<attribute name="dir" />
+		<sequential>
+			<fail message="The directory '@{dir}' does not exists.">
+				<condition>
+					<not>
+						<available file="@{dir}" type="dir" />
+					</not>
+				</condition>
+			</fail>
+		</sequential>
+	</macrodef>
+    
+    <macrodef name="propertycopy">
+        <attribute name="name"/>
+        <attribute name="from"/>
+        <sequential>
+            <property name="@{name}" value="${@{from}}"/>
+        </sequential>
+    </macrodef>
+
+</project>
