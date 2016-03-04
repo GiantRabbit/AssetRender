@@ -88,29 +88,18 @@
 		</exec>
 	</target>
 
-		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
 	<target name="clean" description="Clean the builds for the current platform." depends="setup,info">
 		<delete includeEmptyDirs="true" dir="${dir.build}" failonerror="false" />
-		<delete failonerror="false">
-			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll"/>
-			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll.meta"/>
-		</delete>
 	</target>
 
-		<!--delete includeEmptyDirs="true" dir="${dir.base}/Library" failonerror="false" /-->
 	<target name="cleanAll" description="Clean all builds and Unity Library generated dlls" depends="setup">
 		<delete includeEmptyDirs="true" dir="${dir.base}/Library/ScriptAssemblies" failonerror="false" />
 		<delete includeEmptyDirs="true" failonerror="false">
-			<fileset dir="${dir.ant}/Builds/" includes="**/*" />
+			<fileset dir="${dir.base}/Builds" includes="**/*" />
 		</delete>
-		<delete includeEmptyDirs="true" failonerror="false">
-			<fileset dir="${dir.deploy}/" includes="**/*" />
-		</delete>
-		<delete includeEmptyDirs="true" dir="${dir.base}/XCodeProject2" failonerror="false" />
 		<delete failonerror="false" includeemptydirs="true">
 			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll"/>
 			<fileset dir="${dir.base}/Assets/Libs" includes="*.dll.meta"/>
-			<fileset dir="${dir.base}/Assets/Scaleform" includes="**/*" excludes="*.zip.*,unzip-scaleform"/>
 		</delete>
 	</target>
 
@@ -125,7 +114,7 @@
 			<!-- Build the application via the Unity editor. -->
 			<echo>Building... ${application.file}</echo>
 			
-			<exec executable="@{builder}" failonerror="false" dir="${dir.base}">
+			<exec executable="@{builder}" failonerror="true" dir="${dir.base}">
 				<arg value="-quit" />
 				<arg value="-batchmode"/>
 				<arg value="-nographics"/>
