@@ -20,6 +20,7 @@
 .metadata
 Debug.meta
 bin.meta
+/.ant/user.properties.xml
 /Assets/Libs/*
 /Library
 /Builds
