@@ -20,6 +20,12 @@ public class AssetRender : MonoBehaviour
     public int port = 4000;
 
     //---------------------------------------------------------------------------------------------
+    public void Awake()
+    {
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 4; // Assume we can do stuff within 250 msec.
+    }
+    
     public void Start()
     {
         // Grab the application parameters.
