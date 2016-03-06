@@ -4,7 +4,7 @@ FROM ubuntu:14.04
 MAINTAINER Manolito Snell
 
 # We need XVFB to actually being able to render to a headless server.
-RUN apt-get update && apt-get install -y git libglu1 xvfb libxcursor1
+RUN apt-get update && apt-get install -y libglu1 xvfb libxcursor1
 
 # Copy assets.
 COPY AssetRender.x86_64 /etc/asset-render/
